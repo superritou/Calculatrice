@@ -1,0 +1,1030 @@
+<!doctype html>
+<html lang="fr">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="theme-color" content="#24283a">
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+	<meta name="description" content="Ma Calculatrice personnalisé">
+	<link rel="manifest" href="manifest.json">
+	<title>Ma Calculatrice</title>
+	<link id="favicon" rel="icon" type="image/png" href="favicon.ico">
+	<style>
+	:root {
+	  --fond: #0f172a;
+	  --fond2: #1e293b;
+	  --fond3: #334155;
+	  --teal: #0f766e;
+	  --teal-clair: #14b8a6;
+	  --texte: #e2e8f0;
+	  --or: #fbbf24;
+	  --rouge: #f43f5e;
+	  --violet: #c084fc;
+	}
+	* {
+	  box-sizing: border-box;
+	  -webkit-tap-highlight-color: transparent;
+	}
+	html,
+	body {
+	  margin: 0;
+	  padding: 0;
+	}
+	body {
+	  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	  background: var(--fond);
+	  color: var(--texte);
+	  min-height: 100vh;
+	  min-height: 100dvh;
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	  padding: 10px;
+	}
+	h1 {
+	  font-size: 22px;
+	  color: var(--teal-clair);
+	  margin: 6px 0 10px;
+	  text-align: center;
+	}
+
+	/* Onglets */
+	.onglets {
+	  display: flex;
+	  gap: 6px;
+	  margin-bottom: 10px;
+	  flex-wrap: wrap;
+	  justify-content: center;
+	}
+	.onglets button {
+	  background: var(--fond2);
+	  color: var(--texte);
+	  border: 1px solid var(--fond3);
+	  border-radius: 8px;
+	  padding: 8px 12px;
+	  font-size: 13px;
+	  cursor: pointer;
+	}
+	.onglets button.actif {
+	  background: var(--teal);
+	  border-color: var(--teal-clair);
+	  font-weight: bold;
+	}
+	.onglets button:hover {
+	  background: var(--teal);
+	}
+
+	.panseau {
+	  width: 100%;
+	  max-width: 480px;
+	}
+
+	/* Affichage */
+	.ecran {
+	  background: var(--fond2);
+	  border: 1px solid var(--fond3);
+	  border-radius: 12px;
+	  padding: 10px 14px;
+	  margin-bottom: 10px;
+	  text-align: right;
+	  overflow: hidden;
+	}
+	.sous-ecran {
+	  font-size: 15px;
+	  color: #94a3b8;
+	  min-height: 20px;
+	  overflow-x: auto;
+	  white-space: nowrap;
+	}
+	.grand-ecran {
+	  font-size: 23px;
+	  font-weight: bold;
+	  overflow-x: auto;
+	  white-space: nowrap;
+	  color: var(--texte);
+	}
+	.grand-ecran.erreur {
+	  color: var(--rouge);
+	}
+
+	/* Ligne deg/rad + degrés mémoire */
+	.ligne-outils {
+	  display: flex;
+	  gap: 6px;
+	  margin-bottom: 8px;
+	  flex-wrap: wrap;
+	}
+	.pill {
+	  background: var(--fond2);
+	  color: var(--texte);
+	  border: 1px solid var(--fond3);
+	  border-radius: 20px;
+	  padding: 6px 12px;
+	  font-size: 12px;
+	  cursor: pointer;
+	}
+	.pill.actif {
+	  background: var(--teal);
+	  border-color: var(--teal-clair);
+	}
+	.pill:hover {
+	  background: var(--teal);
+	}
+	.pill.memoire-allumee {
+	  background: var(--or);
+	  color: #1e293b;
+	  border-color: var(--or);
+	  font-weight: bold;
+	}
+
+	/* Rangée utilitaire (CE, ⌫, %, C) */
+	.grille-utils {
+	  display: grid;
+	  grid-template-columns: repeat(4, 1fr);
+	  gap: 6px;
+	  margin-bottom: 6px;
+	}
+	.grille-utils button {
+	  background: var(--fond2);
+	  color: var(--texte);
+	  border: 1px solid var(--fond3);
+	  border-radius: 10px;
+	  padding: 10px 4px;
+	  font-size: 17px;
+	  cursor: pointer;
+	  min-height: 44px;
+	  line-height: 1;
+	}
+	.grille-utils button:hover {
+	  background: var(--rouge);
+	  color: #fff;
+	}
+
+	/* Grille boutons calculatrice : 4 colonnes, opérateurs empilés à droite */
+	.grille-boutons {
+	  display: grid;
+	  grid-template-columns: repeat(4, 1fr);
+	  gap: 6px;
+	}
+	.grille-boutons button {
+	  background: var(--fond2);
+	  color: var(--texte);
+	  border: 1px solid var(--fond3);
+	  border-radius: 10px;
+	  padding: 14px 4px;
+	  font-size: 17px;
+	  cursor: pointer;
+	  min-height: 48px;
+	  line-height: 1;
+	  word-break: break-all;
+	}
+	.grille-boutons button:hover {
+	  background: var(--teal);
+	  color: #f0fdfa;
+	}
+	.grille-boutons button:active {
+	  background: var(--teal-clair);
+	  color: #f0fdfa;
+	}
+	.grille-boutons button.fn {
+	  font-size: 17px;
+	  color: var(--teal-clair);
+	}
+	.grille-boutons button.fn:hover {
+	  color: #f0fdfa;
+	}
+	.grille-boutons button.fn:active {
+	  color: #f0fdfa;
+	}
+	.grille-boutons button.op {
+	  background: #164e63;
+	  border-color: #0e7490;
+	  font-size: 20px;
+	}
+	.grille-boutons button.op:hover {
+	  background: #0e7490;
+	}
+	.grille-boutons button.eg {
+	  background: var(--teal);
+	  border-color: var(--teal-clair);
+	  font-weight: bold;
+	}
+	.grille-boutons button.eg:hover {
+	  background: var(--teal-clair);
+	}
+	.grille-boutons button.eff {
+	  background: #7f1d1d;
+	  border-color: #b91c1c;
+	}
+	.grille-boutons button.eff:hover {
+	  background: #b91c1c;
+	}
+	/* Grille scientifique séparée (affichée seulement en mode sci) */
+	.grille-sci {
+	  display: none;
+	  grid-template-columns: repeat(5, 1fr);
+	  gap: 6px;
+	  margin-bottom: 6px;
+	}
+	body.sci .grille-sci {
+	  display: grid;
+	}
+	.grille-sci button {
+	  background: var(--fond2);
+	  color: var(--texte);
+	  border: 1px solid var(--fond3);
+	  border-radius: 10px;
+	  padding: 14px 4px;
+	  font-size: 17px;
+	  cursor: pointer;
+	  color: var(--teal-clair);
+	  min-height: 48px;
+	  line-height: 1;
+	  word-break: break-all;
+	}
+	.grille-sci button:hover {
+	  background: var(--teal);
+	  color: #f0fdfa;
+	}
+	.grille-sci button:active {
+	  background: var(--teal-clair);
+	  color: #f0fdfa;
+	}
+
+	/* Historique */
+	.zone-histo {
+	  margin-top: 12px;
+	  background: var(--fond2);
+	  border: 1px solid var(--fond3);
+	  border-radius: 12px;
+	  padding: 8px;
+	}
+	.entete-histo {
+	  display: flex;
+	  justify-content: space-between;
+	  align-items: center;
+	  padding: 0 6px 6px;
+	}
+	.entete-histo span {
+	  font-size: 14px;
+	  color: var(--teal-clair);
+	  font-weight: bold;
+	}
+	.entete-histo button {
+	  background: transparent;
+	  color: #94a3b8;
+	  border: none;
+	  font-size: 12px;
+	  cursor: pointer;
+	  padding: 4px;
+	}
+	.entete-histo button:hover {
+	  color: var(--rouge);
+	}
+	.liste-histo {
+	  max-height: 220px;
+	  max-height: calc(40vh - 60px);
+	  overflow-y: auto;
+	  display: flex;
+	  flex-direction: column;
+	  gap: 4px;
+	}
+	.liste-histo div {
+	  background: var(--fond);
+	  border-radius: 8px;
+	  padding: 6px 10px;
+	  cursor: pointer;
+	  font-size: 14px;
+	}
+	.liste-histo div:hover {
+	  background: var(--fond3);
+	}
+	.liste-histo .h-expr {
+	  color: #94a3b8;
+	  font-size: 12px;
+	  overflow: hidden;
+	  text-overflow: ellipsis;
+	  white-space: nowrap;
+	}
+	.liste-histo .h-res {
+	  font-weight: bold;
+	  color: var(--or);
+	}
+	.histo-vide {
+	  color: #64748b;
+	  font-size: 13px;
+	  text-align: center;
+	  padding: 8px;
+	}
+
+	/* Convertisseur */
+	.bloc-outils {
+	  background: var(--fond2);
+	  border: 1px solid var(--fond3);
+	  border-radius: 12px;
+	  padding: 12px;
+	  display: flex;
+	  flex-direction: column;
+	  gap: 10px;
+	}
+	.bloc-outils label {
+	  font-size: 13px;
+	  color: #94a3b8;
+	}
+	select {
+	  background: var(--fond);
+	  color: var(--texte);
+	  border: 1px solid var(--fond3);
+	  border-radius: 8px;
+	  padding: 10px;
+	  font-size: 16px;
+	  width: 100%;
+	}
+	.ligne-conv {
+	  display: grid;
+	  grid-template-columns: 1fr auto 1fr;
+	  gap: 6px;
+	  align-items: center;
+	}
+	.ligne-conv input {
+	  background: var(--fond);
+	  color: var(--texte);
+	  border: 1px solid var(--fond3);
+	  border-radius: 8px;
+	  padding: 10px;
+	  font-size: 16px;
+	  width: 100%;
+	  text-align: center;
+	}
+	.ligne-conv input:focus {
+	  outline: 2px solid var(--teal-clair);
+	}
+	.fleche-conv {
+	  text-align: center;
+	  font-size: 18px;
+	  color: var(--or);
+	  padding: 0 2px;
+	}
+
+	/* Pourcentage / TVA */
+	.champ-tva {
+	  display: grid;
+	  grid-template-columns: 1fr 1fr;
+	  gap: 8px;
+	}
+	.champ-tva label {
+	  display: block;
+	  margin-bottom: 4px;
+	}
+	.preset-tva {
+	  display: flex;
+	  gap: 6px;
+	  flex-wrap: wrap;
+	  margin-bottom: 4px;
+	}
+	.resultats-tva {
+	  background: var(--fond);
+	  border-radius: 10px;
+	  padding: 10px;
+	  font-size: 15px;
+	  display: flex;
+	  flex-direction: column;
+	  gap: 4px;
+	}
+	.resultats-tva b {
+	  color: var(--or);
+	  float: right;
+	}
+
+	.pied {
+	  margin-top: 14px;
+	  font-size: 11px;
+	  color: #64748b;
+	  text-align: center;
+	}
+	</style>
+</head>
+<body>
+
+	<h1>🧮 Ma Calculatrice</h1>
+
+	<div class="onglets">
+	  <button id="tabCalc" class="actif">🧮 Calculatrice</button>
+	  <button id="tabConv">📐 Convertisseur</button>
+	  <button id="tabTva">％ TVA / Pourcentage</button>
+	</div>
+
+	<!-- ==================== ONGLET CALCULATRICE ==================== -->
+	<div id="panneauCalc" class="panseau">
+	  <div class="ecran">
+		<div class="sous-ecran" id="sousEcran"></div>
+		<div class="grand-ecran" id="grandEcran">0</div>
+	  </div>
+
+	  <div class="ligne-outils">
+		<button class="pill" id="btnDegRad">DEG</button>
+		<button class="pill" id="btnMplus">M+</button>
+		<button class="pill" id="btnMr">MR</button>
+		<button class="pill" id="btnMc">MC</button>
+		<button class="pill" id="btnSci" style="margin-left:auto">⚙️ Scientifique</button>
+	  </div>
+
+	  <div class="grille-sci" id="grilleSci">
+		<button class="fn" data-ins="sin(">sin</button>
+		<button class="fn" data-ins="cos(">cos</button>
+		<button class="fn" data-ins="tan(">tan</button>
+		<button class="fn" data-ins="ln(">ln</button>
+		<button class="fn" data-ins="log(">log</button>
+		<button class="fn" data-ins="√(">√</button>
+		<button class="fn" data-ins="^2">x²</button>
+		<button class="fn" data-ins="^">xʸ</button>
+		<button class="fn" data-ins="π">π</button>
+		<button class="fn" data-ins="e">e</button>
+		<button class="fn" data-ins="∛(">∛</button>
+		<button class="fn" data-ins="²√">²√</button>
+		<span></span>
+		<span></span>
+		<span></span>
+	  </div>
+
+	  <div class="grille-utils">
+		<button class="eff" data-ins="CE">CE</button>
+		<button class="eff" data-action="retour">⌫</button>
+		<button class="fn" data-ins="%">%</button>
+		<button class="eff" data-action="reset">C</button>
+	  </div>
+
+	  <div class="grille-boutons" id="grilleBoutons">
+		<button class="fn" data-ins="(">(</button>
+		<button class="fn" data-ins=")">)</button>
+		<button class="fn" data-ins="!">n!</button>
+		<button class="op" data-ins="÷">÷</button>
+
+		<button data-ins="7">7</button>
+		<button data-ins="8">8</button>
+		<button data-ins="9">9</button>
+		<button class="op" data-ins="×">×</button>
+
+		<button data-ins="4">4</button>
+		<button data-ins="5">5</button>
+		<button data-ins="6">6</button>
+		<button class="op" data-ins="−">−</button>
+
+		<button data-ins="1">1</button>
+		<button data-ins="2">2</button>
+		<button data-ins="3">3</button>
+		<button class="op" data-ins="+">+</button>
+
+		<button class="fn" data-action="inverse">±</button>
+		<button data-ins="0">0</button>
+		<button data-ins=",">,</button>
+		<button class="eg" data-action="egal">=</button>
+	  </div>
+
+	  <div class="zone-histo">
+		<div class="entete-histo">
+		  <span>📜 Historique</span>
+		  <button id="btnViderHisto">🗑️ Vider</button>
+		</div>
+		<div class="liste-histo" id="listeHisto"></div>
+	  </div>
+	</div>
+
+	<!-- ==================== ONGLET CONVERTISSEUR ==================== -->
+	<div id="panneauConv" class="panseau" hidden>
+	  <div class="bloc-outils">
+		<label>Catégorie</label>
+		<select id="selCategorie">
+		  <option value="longueur">Longueur</option>
+		  <option value="masse">Masse</option>
+		  <option value="volume">Volume</option>
+		  <option value="surface">Surface</option>
+		  <option value="temps">Temps</option>
+		  <option value="vitesse">Vitesse</option>
+		  <option value="donnees">Données informatiques</option>
+		  <option value="temperature">Température</option>
+		</select>
+		<div class="ligne-conv">
+		  <input type="text" inputmode="decimal" id="convGauche" placeholder="0">
+		  <div class="fleche-conv">⇄</div>
+		  <input type="text" inputmode="decimal" id="convDroite" placeholder="0">
+		</div>
+		<select id="selGauche"></select>
+		<button class="pill" id="btnSwapper">⇅ Échanger les unités</button>
+		<select id="selDroite"></select>
+	  </div>
+	</div>
+
+	<!-- ==================== ONGLET TVA ==================== -->
+	<div id="panneauTva" class="panseau" hidden>
+	  <div class="bloc-outils">
+		<label>Montant</label>
+		<input type="text" inputmode="decimal" id="tvaMontant" placeholder="0,00" style="background: var(--fond); color: var(--texte); border: 1px solid var(--fond3); border-radius: 8px; padding: 10px; font-size: 18px; text-align: right;">
+		<label style="margin-top: 4px">Taux de TVA (%)</label>
+		<div class="preset-tva">
+		  <button class="pill taux" data-taux="2.1">2,1 %</button>
+		  <button class="pill taux actif" data-taux="5.5">5,5 %</button>
+		  <button class="pill taux" data-taux="10">10 %</button>
+		  <button class="pill taux" data-taux="20">20 %</button>
+		  <input type="text" inputmode="decimal" id="tvaTauxLibre" placeholder="Autre" style="background: var(--fond); color: var(--texte); border: 1px solid var(--fond3); border-radius: 20px; padding: 6px 10px; font-size: 12px; width: 70px; text-align: center;">
+		</div>
+		<label style="margin-top: 2px">Sens du calcul</label>
+		<div class="preset-tva">
+		  <button class="pill sens actif" data-sens="ht">J'ai un HT → TVA + TTC</button>
+		  <button class="pill sens" data-sens="ttc">J'ai un TTC → TVA + HT</button>
+		</div>
+		<div class="resultats-tva" id="tvaResultats"></div>
+
+		<label style="margin-top: 6px">Pourcentage d'un nombre</label>
+		<div class="champ-tva">
+		  <div>
+			<label>De (nombre)</label>
+			<input type="text" inputmode="decimal" id="pctDe" placeholder="0" style="background: var(--fond); color: var(--texte); border: 1px solid var(--fond3); border-radius: 8px; padding: 8px; font-size: 15px; width: 100%;">
+		  </div>
+		  <div>
+			<label>%</label>
+			<input type="text" inputmode="decimal" id="pctTaux" placeholder="0" style="background: var(--fond); color: var(--texte); border: 1px solid var(--fond3); border-radius: 8px; padding: 8px; font-size: 15px; width: 100%;">
+		  </div>
+		</div>
+		<div class="resultats-tva" id="pctResultats"></div>
+	  </div>
+	</div>
+
+	<p class="pied">100 % local · v1 · fichier HTML unique</p>
+
+	<script>
+		"use strict";
+
+		/* ============================================================
+		   ÉTAT
+		   ============================================================ */
+		const CLE_HISTO = "calculatrice_historique";
+		const CLE_MEMOIRE = "calculatrice_memoire";
+		let expression = "";        // chaîne affichée et évaluée
+		let degres = true;          // DEG par défaut (choisit aussi localStorage ? non : pas de mémorisation superflue, valeur par défaut à chaque lancement)
+		let memoire = 0;
+		let dernierResultat = 0;
+
+		const grandEcran = document.getElementById("grandEcran");
+		const sousEcran = document.getElementById("sousEcran");
+		function afficher() {
+		  grandEcran.textContent = expression === "" ? "0" : expression;
+		  grandEcran.classList.remove("erreur");
+		}
+
+		/* ============================================================
+		   ANALYSE (tokenisation + évaluation récursive, pas de eval())
+		   ============================================================ */
+		function transformerCaracteres(s) {
+		  // caractères d'affichage -> symboles mathématiques
+		  // (ordre important : "²√" AVANT "√", "e" en dernier pour ne pas toucher sqrt/cbrt)
+		  return s
+			.replaceAll("×", "*")
+			.replaceAll("÷", "/")
+			.replaceAll("−", "-")
+			.replaceAll(",", ".")
+			.replaceAll("²√", "sqrt")
+			.replaceAll("√", "sqrt")
+			.replaceAll("∛", "cbrt")
+			.replaceAll("π", "(3.141592653589793)")
+			.replaceAll("%", "/100")
+			.replaceAll("e", "(2.718281828459045)");
+		}
+
+		function factorielle(n) {
+		  if (n < 0 || Math.floor(n) !== n) return NaN;
+		  if (n > 170) return Infinity;
+		  let r = 1;
+		  for (let i = 2; i <= n; i++) r *= i;
+		  return r;
+		}
+
+		function evaluer(texte) {
+		  // Retourne { valeur } ou lance une erreur explicite
+		  const src = transformerCaracteres(texte);
+		  let pos = 0;
+
+		  function lireNombre() {
+			const deb = pos;
+			while (pos < src.length && /[0-9.]/.test(src[pos])) pos++;
+			if (deb === pos) throw new Error("Nombre attendu");
+			const brut = src.slice(deb, pos);
+			const val = Number(brut);
+			if (isNaN(val)) throw new Error("Nombre invalide : " + brut);
+			return val;
+		  }
+
+		  function lireJeton() {
+			if (pos >= src.length) return ";"; // jeton de fin : ne pas planter quand on lit au-delà du dernier caractère
+			// essaye les fonctions connues
+			for (const f of ["sqrt", "cbrt", "sin", "cos", "tan", "ln", "log"]) {
+			  if (src.startsWith(f, pos)) { pos += f.length; return f; }
+			}
+			if (/[0-9.]/.test(src[pos])) return lireNombre();
+			if ("+-*/^!()".includes(src[pos])) return src[pos++];
+			throw new Error("Caractère inattendu : " + src[pos]);
+		  }
+
+		  function parseExpression() {
+			let val = parseTerme();
+			for (;;) {
+			  const sauve = pos;
+			  const j = lireJeton();
+			  if (j === "+") val += parseTerme();
+			  else if (j === "-") val -= parseTerme();
+			  else { pos = sauve; break; }
+			}
+			return val;
+		  }
+
+		  function parseTerme() {
+			let val = parsePuissance();
+			for (;;) {
+			  const sauve = pos;
+			  const j = lireJeton();
+			  if (j === "*") val *= parsePuissance();
+			  else if (j === "/") val /= parsePuissance();
+			  else { pos = sauve; break; }
+			}
+			return val;
+		  }
+
+		  function parsePuissance() {
+			const base = parsePostfixe();
+			const sauve = pos;
+			const j = lireJeton();
+			if (j === "^") return Math.pow(base, parsePuissance()); // associatif à droite : 2^3^2 = 2^9
+			pos = sauve;
+			return base;
+		  }
+
+		  function parsePostfixe() {
+			let val = parseAtome();
+			for (;;) {
+			  const sauve = pos;
+			  const j = lireJeton();
+			  if (j === "!") val = factorielle(val);
+			  else { pos = sauve; break; }
+			}
+			return val;
+		  }
+
+		  function parseAtome() {
+			const j = lireJeton();
+			if (typeof j === "number") return j;
+			if (j === "-") return -parseAtome();
+			if (j === "+") return parseAtome();
+			if (j === "(") {
+			  const v = parseExpression();
+			  const fermant = lireJeton();
+			  if (fermant !== ")") throw new Error("Parenthèse fermante manquante");
+			  return v;
+			}
+			if (["sqrt", "cbrt", "sin", "cos", "tan", "ln", "log"].includes(j)) {
+			  const v = parseAtome();
+			  switch (j) {
+				case "sqrt": return Math.sqrt(v);
+				case "cbrt": return Math.cbrt(v);
+				case "sin": return degres ? Math.sin(v * Math.PI / 180) : Math.sin(v);
+				case "cos": return degres ? Math.cos(v * Math.PI / 180) : Math.cos(v);
+				case "tan": return degres ? Math.tan(v * Math.PI / 180) : Math.tan(v);
+				case "ln": return Math.log(v);
+				case "log": return Math.log10(v);
+			  }
+			}
+			throw new Error("Jeton inattendu : " + j);
+		  }
+
+		  const resultat = parseExpression();
+		  if (pos < src.length) throw new Error("Expression incomplète");
+		  if (typeof resultat !== "number" || isNaN(resultat)) throw new Error("Résultat non numérique");
+		  return resultat;
+		}
+
+		function formaterNombre(n) {
+		  if (!isFinite(n)) return n > 0 ? "∞" : "-∞";
+		  if (Number.isInteger(n) && Math.abs(n) < 1e15) return String(n);
+		  const arrondi = parseFloat(n.toPrecision(12));
+		  return String(arrondi).replace(".", ",");
+		}
+
+		/* ============================================================
+		   BOUTONS CALCULATRICE
+		   ============================================================ */
+		function clicBoutonCalcul(e) {
+		  const b = e.target.closest("button");
+		  if (!b) return;
+		  const ins = b.dataset.ins;
+		  const action = b.dataset.action;
+
+		  if (ins !== undefined) {
+			if (ins === "CE") { expression = ""; afficher(); return; }
+			expression += ins;
+			afficher();
+			return;
+		  }
+		  if (action === "retour") { expression = expression.slice(0, -1); afficher(); return; }
+		  if (action === "inverse") {
+			if (expression !== "" && !isNaN(parseFloat(transformerCaracteres(expression.slice(-1))))) {
+			  // inverse le signe du dernier nombre : simple heuristique v1
+			  expression = "-" + expression;
+			}
+			afficher();
+			return;
+		  }
+		  if (action === "reset") { expression = ""; sousEcran.textContent = ""; afficher(); return; }
+		  if (action === "egal") {
+			if (expression === "") return;
+			try {
+			  const val = evaluer(expression);
+			  const formate = formaterNombre(val);
+			  sousEcran.textContent = expression + " =";
+			  dernierResultat = val;
+			  ajouterHistorique(expression, formate);
+			  expression = String(parseFloat(val.toPrecision(12)));
+			  afficher();
+			} catch (err) {
+			  grandEcran.textContent = "Erreur : " + err.message;
+			  grandEcran.classList.add("erreur");
+			}
+			return;
+		  }
+		}
+		// le même gestionnaire sert aux trois grilles (utils, principale ET scientifique)
+		document.querySelector(".grille-utils").addEventListener("click", clicBoutonCalcul);
+		document.getElementById("grilleBoutons").addEventListener("click", clicBoutonCalcul);
+		document.getElementById("grilleSci").addEventListener("click", clicBoutonCalcul);
+
+		/* Clavier (desktop uniquement) */
+		document.addEventListener("keydown", (e) => {
+		  if (panneauCalc.hidden) return;
+		  const k = e.key;
+		  if (/^[0-9]$/.test(k)) { expression += k; afficher(); }
+		  else if (k === "." || k === ",") { expression += ","; afficher(); }
+		  else if (k === "+") { expression += "+"; afficher(); }
+		  else if (k === "-") { expression += "−"; afficher(); }
+		  else if (k === "*") { expression += "×"; afficher(); }
+		  else if (k === "/") { e.preventDefault(); expression += "÷"; afficher(); }
+		  else if (k === "(" || k === ")") { expression += k; afficher(); }
+		  else if (k === "Backspace") { expression = expression.slice(0, -1); afficher(); }
+		  else if (k === "Enter" || k === "=") { e.preventDefault(); document.querySelector('[data-action="egal"]').click(); }
+		  else if (k === "Escape") { expression = ""; sousEcran.textContent = ""; afficher(); }
+		});
+
+		/* DEG / RAD */
+		document.getElementById("btnDegRad").addEventListener("click", function () {
+		  degres = !degres;
+		  this.textContent = degres ? "DEG" : "RAD";
+		});
+
+		/* Scientifique on/off */
+		document.getElementById("btnSci").addEventListener("click", function () {
+		  document.body.classList.toggle("sci");
+		  this.classList.toggle("actif");
+		});
+
+		/* Mémoire */
+		function majMemoire() {
+		  const btn = document.getElementById("btnMr");
+		  btn.classList.toggle("memoire-allumee", memoire !== 0);
+		  btn.textContent = memoire !== 0 ? "MR (" + formaterNombre(memoire) + ")" : "MR";
+		}
+		document.getElementById("btnMplus").addEventListener("click", () => {
+		  try { memoire += evaluer(expression === "" ? String(dernierResultat) : expression); } catch (_) {}
+		  localStorage.setItem(CLE_MEMOIRE, String(memoire));
+		  majMemoire();
+		});
+		document.getElementById("btnMr").addEventListener("click", () => {
+		  expression += formaterNombre(memoire).replace(",", ".");
+		  afficher();
+		});
+		document.getElementById("btnMc").addEventListener("click", () => {
+		  memoire = 0;
+		  localStorage.setItem(CLE_MEMOIRE, "0");
+		  majMemoire();
+		});
+		memoire = parseFloat(localStorage.getItem(CLE_MEMOIRE)) || 0;
+		majMemoire();
+
+		/* ============================================================
+		   HISTORIQUE
+		   ============================================================ */
+		const listeHisto = document.getElementById("listeHisto");
+		function obtenirHistorique() {
+		  try { return JSON.parse(localStorage.getItem(CLE_HISTO)) || []; } catch (_) { return []; }
+		}
+		function ajouterHistorique(expr, res) {
+		  const h = obtenirHistorique();
+		  h.unshift({ expr, res, date: Date.now() });
+		  if (h.length > 100) h.length = 100;
+		  localStorage.setItem(CLE_HISTO, JSON.stringify(h));
+		  afficherHistorique();
+		}
+		function afficherHistorique() {
+		  const h = obtenirHistorique();
+		  if (h.length === 0) {
+			listeHisto.innerHTML = '<div class="histo-vide">Aucun calcul pour le moment.</div>';
+			return;
+		  }
+		  listeHisto.innerHTML = "";
+		  for (const item of h) {
+			const div = document.createElement("div");
+			div.innerHTML = '<div class="h-expr"></div><div class="h-res"></div>';
+			div.querySelector(".h-expr").textContent = item.expr + " =";
+			div.querySelector(".h-res").textContent = item.res;
+			div.title = "Cliquer pour réutiliser ce résultat";
+			div.addEventListener("click", () => {
+			  expression += item.res.replace(",", ".").replace("∞", "");
+			  afficher();
+			});
+			listeHisto.appendChild(div);
+		  }
+		}
+		document.getElementById("btnViderHisto").addEventListener("click", () => {
+		  localStorage.removeItem(CLE_HISTO);
+		  afficherHistorique();
+		});
+		afficherHistorique();
+
+		/* ============================================================
+		   ONGLETS
+		   ============================================================ */
+		const panneauCalc = document.getElementById("panneauCalc");
+		const panneauConv = document.getElementById("panneauConv");
+		const panneauTva = document.getElementById("panneauTva");
+		const tabCalc = document.getElementById("tabCalc");
+		const tabConv = document.getElementById("tabConv");
+		const tabTva = document.getElementById("tabTva");
+		tabCalc.addEventListener("click", () => activerOnglet("calc"));
+		tabConv.addEventListener("click", () => activerOnglet("conv"));
+		tabTva.addEventListener("click", () => activerOnglet("tva"));
+		function activerOnglet(lequel) {
+		  panneauCalc.hidden = lequel !== "calc";
+		  panneauConv.hidden = lequel !== "conv";
+		  panneauTva.hidden = lequel !== "tva";
+		  tabCalc.classList.toggle("actif", lequel === "calc");
+		  tabConv.classList.toggle("actif", lequel === "conv");
+		  tabTva.classList.toggle("actif", lequel === "tva");
+		}
+
+		/* ============================================================
+		   CONVERTISSEUR
+		   ============================================================ */
+		const UNITES = {
+		  longueur:   { "Mètre (m)": 1, "Kilomètre (km)": 1000, "Centimètre (cm)": 0.01, "Millimètre (mm)": 0.001, "Pouce (in)": 0.0254, "Pied (ft)": 0.3048, "Mille (mi)": 1609.344 },
+		  masse:      { "Kilogramme (kg)": 1, "Gramme (g)": 0.001, "Tonne (t)": 1000, "Livre (lb)": 0.45359237, "Once (oz)": 0.028349523 },
+		  volume:     { "Litre (L)": 1, "Millilitre (mL)": 0.001, "Mètre cube (m³)": 1000, "Gallon US": 3.785411784, "Tasse (US)": 0.2365882365 },
+		  surface:    { "Mètre carré (m²)": 1, "Kilomètre carré (km²)": 1e6, "Hectare (ha)": 10000, "Centimètre carré (cm²)": 0.0001, "Acre": 4046.8564224 },
+		  temps:      { "Seconde (s)": 1, "Minute (min)": 60, "Heure (h)": 3600, "Jour (j)": 86400, "Milliseconde (ms)": 0.001, "Année (365 j)": 31536000 },
+		  vitesse:    { "m/s": 1, "km/h": 0.277777778, "Mille/h (mph)": 0.44704, "Nœud (kn)": 0.514444444 },
+		  donnees:    { "Octet (o)": 1, "Kilo-octet (Ko)": 1024, "Méga-octet (Mo)": 1048576, "Giga-octet (Go)": 1073741824, "Téra-octet (To)": 1099511627776, "Bit": 0.125 },
+		  temperature: { "Celsius (°C)": 1, "Fahrenheit (°F)": 1, "Kelvin (K)": 1 }
+		};
+		const selCategorie = document.getElementById("selCategorie");
+		const selGauche = document.getElementById("selGauche");
+		const selDroite = document.getElementById("selDroite");
+		const convGauche = document.getElementById("convGauche");
+		const convDroite = document.getElementById("convDroite");
+
+		function remplirSelects() {
+		  const unites = UNITES[selCategorie.value];
+		  selGauche.innerHTML = "";
+		  selDroite.innerHTML = "";
+		  for (const nom of Object.keys(unites)) {
+			selGauche.add(new Option(nom, nom));
+			selDroite.add(new Option(nom, nom));
+		  }
+		  const cles = Object.keys(unites);
+		  selGauche.value = cles[0];
+		  selDroite.value = cles[1] || cles[0];
+		}
+		function convertirTemp(valeur, de, vers) {
+		  // tout passe par Celsius
+		  let c;
+		  if (de.startsWith("Fahrenheit")) c = (valeur - 32) / 1.8;
+		  else if (de.startsWith("Kelvin")) c = valeur - 273.15;
+		  else c = valeur;
+		  if (vers.startsWith("Fahrenheit")) return c * 1.8 + 32;
+		  if (vers.startsWith("Kelvin")) return c + 273.15;
+		  return c;
+		}
+		function convertirDepuisGauche() {
+		  const v = parseFloat(convGauche.value.replace(",", "."));
+		  if (isNaN(v)) { convDroite.value = ""; return; }
+		  const de = selGauche.value, vers = selDroite.value;
+		  let res;
+		  if (selCategorie.value === "temperature") res = convertirTemp(v, de, vers);
+		  else res = v * UNITES[selCategorie.value][de] / UNITES[selCategorie.value][vers];
+		  convDroite.value = formaterNombre(res);
+		}
+		function convertirDepuisDroite() {
+		  const v = parseFloat(convDroite.value.replace(",", "."));
+		  if (isNaN(v)) { convGauche.value = ""; return; }
+		  const de = selDroite.value, vers = selGauche.value;
+		  let res;
+		  if (selCategorie.value === "temperature") res = convertirTemp(v, de, vers);
+		  else res = v * UNITES[selCategorie.value][de] / UNITES[selCategorie.value][vers];
+		  convGauche.value = formaterNombre(res);
+		}
+		convGauche.addEventListener("input", convertirDepuisGauche);
+		convDroite.addEventListener("input", convertirDepuisDroite);
+		selGauche.addEventListener("change", convertirDepuisGauche);
+		selDroite.addEventListener("change", convertirDepuisGauche);
+		selCategorie.addEventListener("change", () => { remplirSelects(); convertirDepuisGauche(); });
+		document.getElementById("btnSwapper").addEventListener("click", () => {
+		  const g = selGauche.value;
+		  selGauche.value = selDroite.value;
+		  selDroite.value = g;
+		  const vg = convGauche.value;
+		  convGauche.value = convDroite.value;
+		  convDroite.value = vg;
+		  convertirDepuisGauche();
+		});
+		remplirSelects();
+
+		/* ============================================================
+		   TVA / POURCENTAGE
+		   ============================================================ */
+		const tvaMontant = document.getElementById("tvaMontant");
+		const tvaTauxLibre = document.getElementById("tvaTauxLibre");
+		let tauxActuel = 5.5;
+		let sensActuel = "ht";
+
+		function lireTaux() {
+		  const libre = parseFloat((tvaTauxLibre.value || "").replace(",", "."));
+		  return isNaN(libre) ? tauxActuel : libre;
+		}
+		function majTva() {
+		  const m = parseFloat((tvaMontant.value || "").replace(",", "."));
+		  const t = lireTaux();
+		  const zone = document.getElementById("tvaResultats");
+		  if (isNaN(m)) { zone.innerHTML = '<div class="histo-vide">Saisissez un montant.</div>'; return; }
+		  let ht, tva, ttc;
+		  if (sensActuel === "ht") { ht = m; tva = ht * t / 100; ttc = ht + tva; }
+		  else { ttc = m; ht = ttc / (1 + t / 100); tva = ttc - ht; }
+		  zone.innerHTML = "";
+		  const lignes = [
+			["Montant HT", formaterNombre(parseFloat(ht.toFixed(2)))],
+			["TVA (" + String(t).replace(".", ",") + " %)", formaterNombre(parseFloat(tva.toFixed(2)))],
+			["Montant TTC", formaterNombre(parseFloat(ttc.toFixed(2)))]
+		  ];
+		  for (const [libelle, val] of lignes) {
+			const d = document.createElement("div");
+			const b = document.createElement("b");
+			d.textContent = libelle + " : ";
+			b.textContent = val;
+			d.appendChild(b);
+			zone.appendChild(d);
+		  }
+		}
+		tvaMontant.addEventListener("input", majTva);
+		tvaTauxLibre.addEventListener("input", majTva);
+		document.querySelectorAll(".pill.taux").forEach((b) => b.addEventListener("click", () => {
+		  document.querySelectorAll(".pill.taux").forEach((x) => x.classList.remove("actif"));
+		  b.classList.add("actif");
+		  tauxActuel = parseFloat(b.dataset.taux);
+		  majTva();
+		}));
+		document.querySelectorAll(".pill.sens").forEach((b) => b.addEventListener("click", () => {
+		  document.querySelectorAll(".pill.sens").forEach((x) => x.classList.remove("actif"));
+		  b.classList.add("actif");
+		  sensActuel = b.dataset.sens;
+		  majTva();
+		}));
+
+		const pctDe = document.getElementById("pctDe");
+		const pctTaux = document.getElementById("pctTaux");
+		function majPct() {
+		  const zone = document.getElementById("pctResultats");
+		  const de = parseFloat((pctDe.value || "").replace(",", "."));
+		  const t = parseFloat((pctTaux.value || "").replace(",", "."));
+		  if (isNaN(de) || isNaN(t)) { zone.innerHTML = '<div class="histo-vide">Saisissez un nombre et un pourcentage.</div>'; return; }
+		  const part = de * t / 100;
+		  zone.innerHTML = "";
+		  const lignes = [
+			[t + " % de " + de, formaterNombre(part)],
+			[de + " augmenté de " + t + " %", formaterNombre(de + part)],
+			[de + " diminué de " + t + " %", formaterNombre(de - part)]
+		  ];
+		  for (const [libelle, val] of lignes) {
+			const d = document.createElement("div");
+			const b = document.createElement("b");
+			d.textContent = libelle + " = ";
+			b.textContent = val;
+			d.appendChild(b);
+			zone.appendChild(d);
+		  }
+		}
+		pctDe.addEventListener("input", majPct);
+		pctTaux.addEventListener("input", majPct);
+
+		majTva();
+		majPct();
+		afficher();
+
+		if ("serviceWorker" in navigator && location.protocol !== "file:") {
+			navigator.serviceWorker.register("./sw.js").catch(() => {});
+		}
+	</script>
+</body>
+</html>

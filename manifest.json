@@ -1,0 +1,52 @@
+{
+    "id": "./🧮-ma-calculatrice.html",
+    "name": "Ma Calculatrice",
+    "short_name": "Calculatrice",
+    "description": "Ma Calculatrice",
+    "lang": "fr",
+    "dir": "ltr",
+    "start_url": "./🧮-ma-calculatrice.html",
+    "scope": "./",
+    "display": "standalone",
+    "launch_handler": { "client_mode": "navigate-existing" },
+    "background_color": "#24283a",
+    "theme_color": "#24283a",
+    "developer": { "name": "Éric Rousseau" },
+    "x-editor": "Éric Rousseau 😊",
+	"icons": [
+		{
+			"src": "calculatrice-icone-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "any"
+		},
+		{
+			"src": "calculatrice-maskable-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
+		}
+	],
+    "protocol_handlers": [
+        {
+            "protocol": "web+calculatrice",
+            "url": "./🧮-ma-calculatrice.html?url=%s"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "screenshot-desktop.png",
+            "sizes": "1920x1080",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Ma Calculatrice sur ordinateur"
+        },
+        {
+            "src": "screenshot-mobile.png",
+            "sizes": "1080x1920",
+            "type": "image/png",
+			"form_factor": "narrow",
+            "label": "Ma Calculatrice sur mobile"
+        }
+    ]
+}
